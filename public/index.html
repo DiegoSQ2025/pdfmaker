@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDFMaker — Editor PDF</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="toolbar">
+    <div class="brand">
+      <span class="brand-icon">&#128196;</span>
+      <span class="brand-name">PDFMaker</span>
+    </div>
+
+    <div class="toolbar-group">
+      <button id="addPdfBtn" class="btn" title="Aggiungi file PDF">+ Aggiungi PDF</button>
+    </div>
+
+    <div class="toolbar-group tools" role="toolbar" aria-label="Strumenti">
+      <button class="btn tool active" data-tool="select" title="Sposta elementi">Sposta</button>
+      <button class="btn tool" data-tool="text" title="Aggiungi testo">Testo</button>
+      <button class="btn tool" data-tool="image" title="Aggiungi immagine">Immagine</button>
+    </div>
+
+    <div class="toolbar-spacer"></div>
+
+    <div class="toolbar-group">
+      <span id="status" class="status"></span>
+      <button id="exportBtn" class="btn primary" title="Genera e scarica il PDF">Scarica PDF</button>
+    </div>
+  </header>
+
+  <input type="file" id="pdfInput" accept="application/pdf,.pdf" multiple hidden />
+  <input type="file" id="imageInput" accept="image/png,image/jpeg" hidden />
+
+  <main id="workspace">
+    <div id="dropzone" class="dropzone">
+      <div class="dropzone-inner">
+        <div class="dropzone-icon">&#128228;</div>
+        <h1>Trascina qui i tuoi PDF</h1>
+        <p>oppure</p>
+        <button id="dropzoneBtn" class="btn primary">Scegli i file</button>
+        <p class="hint">Puoi unire più file, riordinare, ruotare, eliminare pagine<br />e aggiungere testo e immagini.</p>
+      </div>
+    </div>
+    <div id="pagesGrid" class="pages-grid" hidden></div>
+  </main>
+
+  <div id="textModal" class="modal-backdrop" hidden>
+    <div class="modal">
+      <h2>Aggiungi testo</h2>
+      <textarea id="textValue" rows="3" placeholder="Scrivi qui il testo&#8230;"></textarea>
+      <div class="modal-row">
+        <label>Dimensione
+          <input type="number" id="textSize" min="6" max="96" value="18" />
+        </label>
+        <label>Colore
+          <select id="textColor">
+            <option value="#111111">Nero</option>
+            <option value="#ffffff">Bianco</option>
+            <option value="#db1b26">Rosso</option>
+            <option value="#218c21">Verde</option>
+            <option value="#1a38bf">Blu</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="textBold" checked="checked" />
+          Grassetto
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button id="textCancel" class="btn">Annulla</button>
+        <button id="textConfirm" class="btn primary">Inserisci</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
