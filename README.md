@@ -23,18 +23,27 @@ Le anteprime sono renderizzate nel browser con PDF.js; tutte le modifiche strutt
 
 Il posizionamento gestisce correttamente le pagine ruotate: le coordinate sono convertite tra lo spazio di visualizzazione e quello nativo del PDF anche a 90°/180°/270°.
 
-## Avvio
+## Uso online (senza installare nulla)
+
+Il frontend elabora i PDF direttamente nel browser (pdf-lib + PDF.js via CDN), quindi il sito funziona anche **senza backend**:
+
+1. Abilita GitHub Pages sul repository: **Settings → Pages** → Source: *Deploy from a branch* → branch `main`, cartella `/ (root)` → Save
+2. L'app sarà raggiungibile all'indirizzo `https://<utente>.github.io/pdfmaker/`
+
+Alternativa senza configurazione: apri il repository su [CodeSandbox](https://codesandbox.io/s/github/DiegoSQ2025/pdfmaker) o [StackBlitz](https://stackblitz.com/github/DiegoSQ2025/pdfmaker), che eseguono il server Node nel browser senza installare nulla sul tuo PC.
+
+## Avvio locale (opzionale)
+
+L'avvio locale serve solo se preferisci l'elaborazione lato backend:
 
 ```bash
 npm install
 npm start
 ```
 
-Apri http://localhost:3000 (porta configurabile con `PORT`).
+Apri http://localhost:3000 (porta configurabile con `PORT`). Non richiede permessi di amministratore e non installa nulla a livello di sistema: le dipendenze vivono nella cartella `node_modules` del progetto.
 
-```bash
-PORT=8080 npm start
-```
+> Se il backend non risponde (es. su Pages), l'app passa automaticamente alla generazione del PDF nel browser.
 
 ## API
 

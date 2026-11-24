@@ -543,19 +543,31 @@ async function exportPdf() {
       });
     });
 
-    const formData = new FormData();
-    state.files.forEach((file) => {
-      formData.append('files', new Blob([file.bytes], { type: 'application/pdf' }), file.name);
-    });
-    formData.append('spec', JSON.stringify(spec));
+    let blob = null;
+    try {
+      const formData = new FormData();
+      state.files.forEach((file) => {
+        formData.append('files', new Blob([file.bytes], { type: 'application/pdf' }), file.name);
+      });
+      formData.append('spec', JSON.stringify(spec));
 
-    const response = await fetch('/api/export', { method: 'POST', body: formData });
-    if (!response.ok) {
-      const payload = await response.json().catch(() => ({}));
-      throw new Error(payload.error || `Errore del server (${response.status})`);
+      const response = await fetch('/api/export', { method: 'POST', body: formData });
+      if (response.ok && (response.headers.get('content-type') || '').includes('application/pdf')) {
+        blob = await response.blob();
+      }
+    } catch (err) {
+      console.warn('Backend non disponibile, generazione locale in corso…');
     }
 
-    const blob = await response.blob();
+    if (!blob) {
+      const bytes = await window.PDFMakerCore.buildPdf(
+        window.PDFLib,
+        spec,
+        state.files.map((file) => file.bytes)
+      );
+      blob = new Blob([bytes], { type: 'application/pdf' });
+    }
+
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
