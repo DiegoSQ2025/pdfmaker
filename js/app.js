@@ -233,9 +233,13 @@ function buildAnnotationElement(annotation, annotationIndex, pageIndex, scale) {
   } else {
     element.style.width = `${annotation.w * scale}px`;
     element.style.height = `${annotation.h * scale}px`;
-    const img = document.createElement('img');
-    img.src = annotation.image;
-    element.appendChild(img);
+    if (/^data:image\/(png|jpeg);base64,/.test(annotation.image)) {
+      const img = document.createElement('img');
+      img.src = annotation.image;
+      element.appendChild(img);
+    } else {
+      element.style.background = 'rgba(219, 27, 38, 0.2)';
+    }
 
     if (state.selectedAnnotation && state.selectedAnnotation.page === pageIndex
       && state.selectedAnnotation.index === annotationIndex) {
@@ -414,21 +418,34 @@ function openTextModal(options) {
   } else {
     els.textValue.value = '';
   }
+  els.textConfirm.disabled = els.textValue.value.trim() === '';
   els.textValue.focus();
+
+  const confirmState = () => {
+    els.textConfirm.disabled = els.textValue.value.trim() === '';
+  };
+  els.textValue.addEventListener('input', confirmState);
 
   const cleanup = () => {
     modal.hidden = true;
+    els.textValue.removeEventListener('input', confirmState);
     els.textConfirm.removeEventListener('click', onConfirm);
     els.textCancel.removeEventListener('click', onCancel);
   };
 
   function onConfirm() {
-    const text = els.textValue.value;
+    const text = els.textValue.value.trim();
+    if (!text) {
+      showToast('Scrivi prima il testo da inserire');
+      els.textValue.focus();
+      return;
+    }
     const size = Math.min(96, Math.max(6, Number(els.textSize.value) || 18));
     const color = els.textColor.value;
     const bold = els.textBold.checked;
     cleanup();
     options.onConfirm(text, size, color, bold);
+    showToast('Testo inserito: trascinalo per posizionarlo meglio');
   }
 
   function onCancel() {
