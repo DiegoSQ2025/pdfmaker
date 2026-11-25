@@ -82,20 +82,30 @@ async function handlePdfFiles(fileList) {
   try {
     for (const file of pdfFiles) {
       const bytes = new Uint8Array(await file.arrayBuffer());
-      const pdfDoc = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+      try {
+        const pdfDoc = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
 
-      const fileEntry = { name: file.name, bytes, pdfDoc, pages: [] };
-      for (let i = 0; i < pdfDoc.numPages; i += 1) {
-        const pdfPage = await pdfDoc.getPage(i + 1);
-        fileEntry.pages.push({ intrinsicRotation: normalizeAngle(pdfPage.rotate) });
-        state.layout.push({
-          file: state.files.length,
-          page: i,
-          rot: normalizeAngle(pdfPage.rotate),
-          annotations: [],
-        });
+        const fileEntry = { name: file.name, bytes, pdfDoc, pages: [] };
+        for (let i = 0; i < pdfDoc.numPages; i += 1) {
+          const pdfPage = await pdfDoc.getPage(i + 1);
+          fileEntry.pages.push({ intrinsicRotation: normalizeAngle(pdfPage.rotate) });
+          state.layout.push({
+            file: state.files.length,
+            page: i,
+            rot: normalizeAngle(pdfPage.rotate),
+            annotations: [],
+          });
+        }
+        state.files.push(fileEntry);
+      } catch (loadErr) {
+        if (loadErr && loadErr.name === 'PasswordException') {
+          throw new Error(`Il file "${file.name}" è protetto da password: rimuovi la protezione prima di caricarlo`);
+        }
+        if (/invalid pdf structure|can't parse|corrupt/i.test(String(loadErr && loadErr.message))) {
+          throw new Error(`Il file "${file.name}" non sembra un PDF valido o è corrotto`);
+        }
+        throw loadErr;
       }
-      state.files.push(fileEntry);
     }
 
     els.dropzone.hidden = true;
@@ -105,8 +115,9 @@ async function handlePdfFiles(fileList) {
     setStatus(`${state.layout.length} pagine · ${state.files.length} file`);
   } catch (err) {
     console.error(err);
-    showToast('Impossibile leggere uno dei PDF', true);
-    setStatus('');
+    const message = err && err.message ? err.message : 'Impossibile leggere uno dei PDF';
+    showToast(message, true);
+    setStatus('Errore di caricamento');
   }
 }
 
@@ -641,13 +652,15 @@ els.imageInput.addEventListener('change', async () => {
 els.exportBtn.addEventListener('click', exportPdf);
 
 ['dragover', 'dragenter'].forEach((type) => {
-  els.workspace.addEventListener(type, (event) => {
+  window.addEventListener(type, (event) => {
     event.preventDefault();
-    if (state.files.length === 0) els.dropzone.classList.add('dragover');
+    if (event.target.closest && event.target.closest('#workspace') && state.files.length === 0) {
+      els.dropzone.classList.add('dragover');
+    }
   });
 });
 ['dragleave', 'drop'].forEach((type) => {
-  els.workspace.addEventListener(type, (event) => {
+  window.addEventListener(type, (event) => {
     event.preventDefault();
     els.dropzone.classList.remove('dragover');
     if (type === 'drop' && event.dataTransfer && event.dataTransfer.files.length > 0) {
