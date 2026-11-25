@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'" />
   <title>PDFMaker — Editor PDF</title>
-  <link rel="stylesheet" href="css/style.css?v=uploadfix" />
+  <link rel="stylesheet" href="css/style.css?v=diag1" />
 </head>
 <body>
   <header class="toolbar">
@@ -78,11 +78,12 @@
   </div>
 
   <div id="toast" class="toast" hidden></div>
+  <div id="diagnostics" hidden></div>
 
-  <script src="vendor/pdf.min.js?v=uploadfix"></script>
-  <script src="vendor/pdf-lib.min.js?v=uploadfix"></script>
-  <script src="shared/export-core.js?v=uploadfix"></script>
-  <script src="js/app.js?v=uploadfix"></script>
+  <script src="vendor/pdf.min.js?v=diag1"></script>
+  <script src="vendor/pdf-lib.min.js?v=diag1"></script>
+  <script src="shared/export-core.js?v=diag1"></script>
+  <script src="js/app.js?v=diag1"></script>
   <script>
     window.addEventListener('DOMContentLoaded', function () {
       if (typeof pdfjsLib === 'undefined' || typeof PDFLib === 'undefined') {

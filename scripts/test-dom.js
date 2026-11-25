@@ -56,7 +56,7 @@ function makeFakePdfJs(numPages) {
             return { scale, rotation, width: 595 * (scale || 1), height: 842 * (scale || 1) };
           },
           render() {
-            return { catch(cb) { if (cb) cb(); } };
+            return { promise: Promise.resolve(), catch(cb) { if (cb) cb(); } };
           },
         };
       },
@@ -94,7 +94,7 @@ async function main() {
           scale, rotation,
           width: 595 * scale, height: 842 * scale,
         }),
-        render: () => ({ catch(cb) { if (cb) cb(); } }),
+        render: () => ({ promise: Promise.resolve(), catch(cb) { if (cb) cb(); } }),
       }),
     }),
   }) };

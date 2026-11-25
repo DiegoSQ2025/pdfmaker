@@ -157,10 +157,19 @@ async function renderPageCard(entry, index) {
     overlay.appendChild(buildAnnotationElement(annotation, annotationIndex, index, scale));
   });
 
-  const renderTask = pdfPage.render({ canvasContext: canvas.getContext('2d'), viewport });
-  renderTask.catch((err) => {
-    if (err && err.name !== 'RenderingCancelledException') console.error(err);
-  });
+  let renderTask = null;
+  try {
+    renderTask = pdfPage.render({ canvasContext: canvas.getContext('2d'), viewport });
+  } catch (renderErr) {
+    renderTask = null;
+    thumbWrap.appendChild(buildRenderError(renderErr, entry));
+  }
+  if (renderTask) {
+    renderTask.promise.then(() => {}, (err) => {
+      if (err && err.name === 'RenderingCancelledException') return;
+      thumbWrap.appendChild(buildRenderError(err, entry));
+    });
+  }
 
   const meta = document.createElement('div');
   meta.className = 'page-meta';
@@ -226,6 +235,34 @@ function escapeHtml(value) {
     "'": '&#39;',
   })[ch]);
 }
+
+function buildRenderError(err, entry) {
+  const box = document.createElement('div');
+  box.className = 'render-error';
+  box.textContent = `Anteprima pagina ${entry.page + 1} non riuscita: ${err && err.message ? err.message : String(err)}`;
+  return box;
+}
+
+function logDiagnostic(message) {
+  const panel = document.getElementById('diagnostics');
+  if (!panel) return;
+  panel.hidden = false;
+  const line = document.createElement('div');
+  line.className = 'diag-line';
+  line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+  panel.appendChild(line);
+  while (panel.children.length > 8) {
+    panel.removeChild(panel.firstChild);
+  }
+}
+
+window.addEventListener('error', (event) => {
+  logDiagnostic(`Errore: ${event.message}`);
+});
+window.addEventListener('unhandledrejection', (event) => {
+  const reason = event.reason && (event.reason.message || String(event.reason));
+  logDiagnostic(`Errore asincrono: ${reason}`);
+});
 
 function buildAnnotationElement(annotation, annotationIndex, pageIndex, scale) {
   const element = document.createElement('div');
